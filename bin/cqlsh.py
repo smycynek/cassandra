@@ -235,7 +235,7 @@ parser.add_option("-t", "--tty", action='store_true', dest='tty',
 optvalues = optparse.Values()
 (options, arguments) = parser.parse_args(sys.argv[1:], values=optvalues)
 
-# BEGIN history/config definition
+# BEGIN config definition
 HISTORY_DIR = os.path.expanduser(os.path.join('~', '.cassandra'))
 
 if hasattr(options, 'cqlshrc'):
@@ -245,13 +245,6 @@ if hasattr(options, 'cqlshrc'):
         CONFIG_FILE = os.path.join(HISTORY_DIR, 'cqlshrc')
 else:
     CONFIG_FILE = os.path.join(HISTORY_DIR, 'cqlshrc')
-
-HISTORY = os.path.join(HISTORY_DIR, 'cqlsh_history')
-if not os.path.exists(HISTORY_DIR):
-    try:
-        os.mkdir(HISTORY_DIR)
-    except OSError:
-        print '\nWarning: Cannot create directory at `%s`. Command history will not be saved.\n' % HISTORY_DIR
 
 OLD_CONFIG_FILE = os.path.expanduser(os.path.join('~', '.cqlshrc'))
 if os.path.exists(OLD_CONFIG_FILE):
@@ -263,10 +256,8 @@ if os.path.exists(OLD_CONFIG_FILE):
                 % (OLD_CONFIG_FILE, CONFIG_FILE)
     else:
         os.rename(OLD_CONFIG_FILE, CONFIG_FILE)
-OLD_HISTORY = os.path.expanduser(os.path.join('~', '.cqlsh_history'))
-if os.path.exists(OLD_HISTORY):
-    os.rename(OLD_HISTORY, HISTORY)
-# END history/config definition
+
+# END config definition
 
 CQL_ERRORS = (
     cassandra.AlreadyExists, cassandra.AuthenticationFailed, cassandra.CoordinationFailure,
@@ -2545,6 +2536,24 @@ def save_history():
 
 
 def main(options, hostname, port):
+
+    global HISTORY
+    global HISTORY_DIR
+    if options.history_directory is not None:
+        HISTORY_DIR = options.history_directory
+    HISTORY = os.path.join(HISTORY_DIR, 'cqlsh_history')
+
+    if not os.path.exists(HISTORY_DIR):
+        try:
+            os.mkdir(HISTORY_DIR)
+        except OSError:
+            print '\nWarning: Cannot create directory at `%s`. Command history will not be saved.\n' % HISTORY_DIR
+
+    OLD_HISTORY = \
+        os.path.expanduser(os.path.join('~', '.cqlsh_history'))
+    if os.path.exists(OLD_HISTORY):
+        os.rename(OLD_HISTORY, HISTORY)
+
     setup_cqlruleset(options.cqlmodule)
     setup_cqldocs(options.cqlmodule)
     init_history()

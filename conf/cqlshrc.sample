@@ -239,4 +239,4 @@ port = 9042
 
 ;; History configuration
 ; [history]
-; history_directory = ~/alt_history_dir
+; history_directory = /tmp
