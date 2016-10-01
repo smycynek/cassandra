@@ -236,3 +236,7 @@ port = 9042
 ;; Optional table-specific options for COPY TO
 ; [copy-to:mykeyspace.mytable]
 ; pagetimeout = 30
+
+;; History configuration
+; [history]
+; history_directory = ~/alt_history_dir

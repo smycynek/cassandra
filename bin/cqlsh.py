@@ -61,6 +61,8 @@ CP65001 = 'cp65001'  # Win utf-8 variant
 description = "CQL Shell for Apache Cassandra"
 version = "5.0.1"
 
+HISTORY = None
+
 readline = None
 try:
     # check if tty first, cause readline doesn't check, and only cares
@@ -675,7 +677,8 @@ class Shell(cmd.Cmd):
                  single_statement=None,
                  request_timeout=DEFAULT_REQUEST_TIMEOUT_SECONDS,
                  protocol_version=DEFAULT_PROTOCOL_VERSION,
-                 connect_timeout=DEFAULT_CONNECT_TIMEOUT_SECONDS):
+                 connect_timeout=DEFAULT_CONNECT_TIMEOUT_SECONDS,
+                 history_directory=None):
         cmd.Cmd.__init__(self, completekey=completekey)
         self.hostname = hostname
         self.port = port
@@ -746,6 +749,7 @@ class Shell(cmd.Cmd):
         if stdin is None:
             stdin = sys.stdin
 
+        self.history_directory = history_directory
         if tty:
             self.reset_prompt()
             self.report_connection()
@@ -1975,7 +1979,8 @@ class Shell(cmd.Cmd):
                          display_nanotime_format=self.display_nanotime_format,
                          display_float_precision=self.display_float_precision,
                          display_double_precision=self.display_double_precision,
-                         max_trace_wait=self.max_trace_wait)
+                         max_trace_wait=self.max_trace_wait,
+                         history_directory=self.history_directory)
         subshell.cmdloop()
         f.close()
 
@@ -2452,7 +2457,7 @@ def read_options(cmdlineargs, environment):
     optvalues.connect_timeout = option_with_default(configs.getint, 'connection', 'timeout', DEFAULT_CONNECT_TIMEOUT_SECONDS)
     optvalues.request_timeout = option_with_default(configs.getint, 'connection', 'request_timeout', DEFAULT_REQUEST_TIMEOUT_SECONDS)
     optvalues.execute = None
-
+    optvalues.history_directory =  option_with_default(configs.get, 'history', 'history_directory', None)
     (options, arguments) = parser.parse_args(cmdlineargs, values=optvalues)
 
     hostname = option_with_default(configs.get, 'connection', 'hostname', DEFAULT_HOST)
@@ -2614,7 +2619,8 @@ def main(options, hostname, port):
                       single_statement=options.execute,
                       request_timeout=options.request_timeout,
                       connect_timeout=options.connect_timeout,
-                      encoding=options.encoding)
+                      encoding=options.encoding,
+                      history_directory=options.history_directory)
     except KeyboardInterrupt:
         sys.exit('Connection aborted.')
     except CQL_ERRORS, e:
@@ -2623,7 +2629,6 @@ def main(options, hostname, port):
         sys.exit('Unsupported CQL version: %s' % (e,))
     if options.debug:
         shell.debug = True
-
     shell.cmdloop()
     save_history()
     batch_mode = options.file or options.execute
