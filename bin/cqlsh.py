@@ -61,8 +61,6 @@ CP65001 = 'cp65001'  # Win utf-8 variant
 description = "CQL Shell for Apache Cassandra"
 version = "5.0.1"
 
-HISTORY = None
-
 readline = None
 try:
     # check if tty first, cause readline doesn't check, and only cares
@@ -2551,6 +2549,7 @@ def main(options, hostname, port):
 
     OLD_HISTORY = \
         os.path.expanduser(os.path.join('~', '.cqlsh_history'))
+
     if os.path.exists(OLD_HISTORY):
         os.rename(OLD_HISTORY, HISTORY)
 
